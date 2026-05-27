@@ -520,6 +520,14 @@
         <div class="skeleton" style="height: 20px; width: 60%; border-radius: 8px;"></div>
       `;
       btn.disabled = true;
+      // make sure result area is visible on small screens: gently scroll it into view
+      setTimeout(() => {
+        try {
+          result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (e) {
+          window.scrollTo({ top: result.offsetTop - 20, behavior: 'smooth' });
+        }
+      }, 80);
 
       try {
         const res = await fetch(API_URL, {
@@ -552,12 +560,19 @@
             ${logPrice !== null ? `<div class="meta-row"><span>Log scale value</span><strong>${Number(logPrice).toFixed(4)}</strong></div>` : ""}
           </div>
         `;
+        // Smoothly ensure the result panel is centered on screen after render
+        setTimeout(() => {
+          result.focus && result.setAttribute('tabindex', '-1');
+          try { result.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { window.scrollTo({ top: result.offsetTop - 20, behavior: 'smooth' }); }
+        }, 60);
       } catch (error) {
         result.className = "result error";
         result.innerHTML = `
           <h3>Prediction Error</h3>
           <div class="error-detail">${error.message}</div>
         `;
+        // bring error into view so user notices it
+        setTimeout(() => { try { result.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { window.scrollTo({ top: result.offsetTop - 20, behavior: 'smooth' }); } }, 60);
       } finally {
         btn.disabled = false;
       }
