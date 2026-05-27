@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Predict Japanese used car prices using machine learning. Input vehicle attributes and get instant price predictions." />
+  <title>Japan Used Car Price Predictor | ML-Powered Valuation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0a0e27;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1f2937;
+      --text-primary: #f3f4f6;
+      --text-secondary: #d1d5db;
+      --text-muted: #9ca3af;
+      --accent-primary: #2563eb;
+      --accent-light: #3b82f6;
+      --border: #2d3748;
+      --success: #10b981;
+      --error: #dc2626;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+      --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.18);
+      --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.24);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #0f1419 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    p.subtitle {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+      transition: all 200ms ease-out;
+    }
+
+    .card:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      background: rgba(17, 24, 39, 0.7);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+    }
+
+    .card h2 {
+      margin: 0 0 20px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+    }
+
+    input, select {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(31, 41, 55, 0.5);
+      color: var(--text-primary);
+      font-family: 'Geist', inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 150ms ease-out;
+    }
+
+    input::placeholder, select::placeholder {
+      color: var(--text-muted);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      input:hover, select:hover {
+        border-color: var(--border);
+        background: rgba(31, 41, 55, 0.7);
+      }
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-primary);
+      background: rgba(31, 41, 55, 0.9);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 768px) {
+      .inline { grid-template-columns: 1fr; }
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: 'Geist', inherit;
+      transition: all 150ms ease-out;
+      position: relative;
+    }
+
+    button.primary {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      button.primary:hover:not(:disabled) {
+        background: var(--accent-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--accent-light);
+      border: 1px solid var(--border);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      button.secondary:hover:not(:disabled) {
+        background: rgba(37, 99, 235, 0.1);
+        border-color: var(--accent-primary);
+      }
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 32px;
+      padding: 28px;
+      border-radius: 20px;
+      background: rgba(17, 24, 39, 0.5);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      animation: slideIn 300ms ease-out;
+      max-width: 600px;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result.success {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(6, 78, 59, 0.12);
+    }
+
+    .result.error {
+      border-color: rgba(220, 38, 38, 0.3);
+      background: rgba(127, 29, 29, 0.12);
+    }
+
+    .result h3 {
+      margin: 0 0 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .price {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .price-unit {
+      font-size: 0.65em;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .meta {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+
+    .hint {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(37, 99, 235, 0.08);
+      border-left: 3px solid var(--accent-primary);
+    }
+
+    .error-detail {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: rgba(220, 38, 38, 0.1);
+      border-left: 3px solid var(--error);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .json-response {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #0a0a0a;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      overflow: auto;
+      max-height: 150px;
+    }
+
+    .json-response.visible {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'Courier New', monospace;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .grid { grid-template-columns: 1fr; gap: 20px; }
+      .card { padding: 20px; }
+      .price { font-size: 2.2rem; }
+      .container { padding: 32px 16px 48px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Car Price Predictor</h1>
+      <p class="subtitle">Machine learning-powered valuation for Japanese used cars. Enter vehicle specifications to get instant predictions.</p>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Vehicle specifications</h2>
+        <div class="inline">
+          <label>
+            Vehicle age (years)
+            <input type="number" id="vehicle_age" step="0.1" min="0" value="8.0" />
+          </label>
+          <label>
+            Number of doors
+            <input type="number" id="doors_num" step="0.1" min="0" value="4" />
+          </label>
+        </div>
+        <label>
+          Number of seats
+          <input type="number" id="seats_num" step="0.1" min="0" value="5" />
+        </label>
+        <label>
+          Manufacturer
+          <select id="make_clean"></select>
+        </label>
+        <label>
+          Model name
+          <input type="text" id="model_clean" value="Corolla Fielder" />
+        </label>
+        <label>
+          Body type
+          <select id="body_guess"></select>
+        </label>
+        <label>
+          Age category
+          <select id="age_bucket"></select>
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Market & Location</h2>
+        <label>
+          Market country
+          <select id="market_country"></select>
+        </label>
+        <label>
+          Stock country
+          <select id="stock_country"></select>
+        </label>
+        <label>
+          Overseas stock
+          <select id="is_overseas_stock">
+            <option value="false">Domestic</option>
+            <option value="true">International</option>
+          </select>
+        </label>
+        <label>
+          VIN region
+          <select id="vin_region"></select>
+        </label>
+        <label>
+          Steering side
+          <select id="steering_group"></select>
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Powertrain</h2>
+        <label>
+          Fuel type
+          <select id="fuel_group"></select>
+        </label>
+        <label>
+          Transmission
+          <select id="transmission_group"></select>
+        </label>
+        <label>
+          Drive system
+          <select id="drive_group"></select>
+        </label>
+        <div class="actions">
+          <button class="primary" onclick="predict()">Get Price Prediction</button>
+          <button class="secondary" onclick="fillExample()">Load example</button>
+        </div>
+        <div class="hint">💡 All fields use categories from the training dataset. The model predicts prices in USD.</div>
+      </section>
+    </div>
+
+    <section id="result" class="result" style="display:none;"></section>
+  </main>
+
+  <script>
+    const API_URL = "/api/v1/predict";
+
+    const options = {
+      market_country: ["Japan", "Mozambique", "Angola", "Burundi", "Chile", "Paraguay", "Guatemala", "Costa Rica", "Dominican Republic", "Russia", "Democratic Republic of the Congo", "Other"],
+      stock_country: ["Japan", "Singapore", "United Kingdom", "Australia", "Other"],
+      make_clean: ["TOYOTA", "NISSAN", "HONDA", "MAZDA", "MITSUBISHI", "SUZUKI", "SUBARU", "ISUZU", "DAIHATSU", "LEXUS", "AUDI", "BMW", "CHEVROLET", "FIAT", "FORD", "JAGUAR", "JEEP", "LAND ROVER", "MERCEDES-BENZ", "MINI", "PORSCHE", "RENAULT", "SMART", "TESLA", "VOLKSWAGEN", "VOLVO", "ALFA ROMEO", "AMG", "HINO", "PEUGEOT", "MASERATI", "Other"],
+      age_bucket: ["0-1", "2-3", "4-5", "6-10", "11-20", "20+"],
+      fuel_group: ["Electric", "Hybrid(Diesel)", "Hybrid(Petrol)", "Diesel", "Petrol", "Other"],
+      transmission_group: ["CVT", "Manual", "Automatic", "Other"],
+      drive_group: ["4WD", "2WD", "Other"],
+      steering_group: ["Right", "Left"],
+      vin_region: ["Japan", "Korea", "United Kingdom", "Germany", "USA", "Canada", "Mexico", "China", "France/Spain", "Italy", "Sweden/Finland", "Other"],
+      body_guess: ["truck_pickup", "van", "wagon", "convertible_roadster", "mpv_minivan", "coupe_roadster_like", "sedan_like", "suv_crossover_like", "unknown"],
+    };
+
+    function populateSelect(id, values, selectedValue = null) {
+      const select = document.getElementById(id);
+      select.innerHTML = values.map(v => `<option value="${v}">${v}</option>`).join("");
+      if (selectedValue !== null) select.value = selectedValue;
+    }
+
+    function initForm() {
+      populateSelect("market_country", options.market_country, "Japan");
+      populateSelect("stock_country", options.stock_country, "Japan");
+      populateSelect("make_clean", options.make_clean, "TOYOTA");
+      populateSelect("age_bucket", options.age_bucket, "6-10");
+      populateSelect("fuel_group", options.fuel_group, "Petrol");
+      populateSelect("transmission_group", options.transmission_group, "Automatic");
+      populateSelect("drive_group", options.drive_group, "2WD");
+      populateSelect("steering_group", options.steering_group, "Right");
+      populateSelect("vin_region", options.vin_region, "Japan");
+      populateSelect("body_guess", options.body_guess, "sedan_like");
+    }
+
+    function fillExample() {
+      document.getElementById("vehicle_age").value = "8";
+      document.getElementById("doors_num").value = "4";
+      document.getElementById("seats_num").value = "5";
+      document.getElementById("make_clean").value = "TOYOTA";
+      document.getElementById("model_clean").value = "Corolla Fielder";
+      document.getElementById("body_guess").value = "wagon";
+      document.getElementById("age_bucket").value = "6-10";
+      document.getElementById("market_country").value = "Japan";
+      document.getElementById("stock_country").value = "Japan";
+      document.getElementById("is_overseas_stock").value = "false";
+      document.getElementById("vin_region").value = "Japan";
+      document.getElementById("steering_group").value = "Right";
+      document.getElementById("fuel_group").value = "Petrol";
+      document.getElementById("transmission_group").value = "Automatic";
+      document.getElementById("drive_group").value = "2WD";
+    }
+
+    function getPayload() {
+      return {
+        vehicle_age: Number(document.getElementById("vehicle_age").value),
+        doors_num: Number(document.getElementById("doors_num").value),
+        seats_num: Number(document.getElementById("seats_num").value),
+        market_country: document.getElementById("market_country").value,
+        stock_country: document.getElementById("stock_country").value,
+        is_overseas_stock: document.getElementById("is_overseas_stock").value === "true",
+        make_clean: document.getElementById("make_clean").value,
+        model_clean: document.getElementById("model_clean").value.trim(),
+        age_bucket: document.getElementById("age_bucket").value,
+        fuel_group: document.getElementById("fuel_group").value,
+        transmission_group: document.getElementById("transmission_group").value,
+        drive_group: document.getElementById("drive_group").value,
+        steering_group: document.getElementById("steering_group").value,
+        vin_region: document.getElementById("vin_region").value,
+        body_guess: document.getElementById("body_guess").value,
+      };
+    }
+
+    async function predict() {
+      const btn = document.querySelector("button.primary");
+      const result = document.getElementById("result");
+      const payload = getPayload();
+
+      result.style.display = "block";
+      result.className = "result";
+      result.innerHTML = `
+        <h3>Calculating</h3>
+        <div class="skeleton" style="height: 60px; margin: 16px 0; border-radius: 12px;"></div>
+        <div class="skeleton" style="height: 20px; width: 60%; border-radius: 8px;"></div>
+      `;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errorMsg = Array.isArray(data?.detail)
+            ? data.detail.map(e => e.msg || JSON.stringify(e)).join("; ")
+            : data?.detail || JSON.stringify(data);
+          throw new Error(errorMsg);
+        }
+
+        result.className = "result success";
+        const normalPrice = data.predicted_price ?? data.predicted_price_value ?? null;
+        const logPrice = data.predicted_price_log ?? null;
+
+        result.innerHTML = `
+          <h3>Estimated Market Value</h3>
+          <div class="price">${normalPrice !== null ? Number(normalPrice).toLocaleString(undefined, { maximumFractionDigits: 0 }) : "N/A"}<span class="price-unit">USD</span></div>
+          <div class="meta">
+            <div class="meta-row">
+              <span>Prediction status</span>
+              <strong>✓ Success</strong>
+            </div>
+            ${logPrice !== null ? `<div class="meta-row"><span>Log scale value</span><strong>${Number(logPrice).toFixed(4)}</strong></div>` : ""}
+          </div>
+        `;
+      } catch (error) {
+        result.className = "result error";
+        result.innerHTML = `
+          <h3>Prediction Error</h3>
+          <div class="error-detail">${error.message}</div>
+        `;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initForm();
+      fillExample();
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,10 @@
+/data
+/.venv
+
+# streamlit secrets
+.streamlit/secrets.toml
+
+# models
+models/
+*.pkl
+*.model
